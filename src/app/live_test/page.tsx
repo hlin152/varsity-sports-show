@@ -14,6 +14,8 @@ function computeStatus(startAt: string): "live" | "upcoming" | "replay" {
 // ─── MOCK BACKEND RESPONSE ────────────────────────────────────────────────────
 const DEMO_GAME = {
   id: "nsu-vs-gcu",
+  title: "Varsity Sports Show Live Stream",
+  league: "Football",
   home: {
     name: "Nevada State University (NSU) Scorpions",
     shortName: "NSU",
@@ -25,8 +27,8 @@ const DEMO_GAME = {
     logo: null as string | null,
   },
   location: "Henderson, Nevada",
-  gameTime: "Saturday, Apr 4, 2026 · 3:00 PM PDT",
   startAt: "2026-04-04T22:00:00.000Z", // Apr 4, 2026 · 3:00 PM PDT (UTC-7)
+  gameTime: "Saturday, Apr 4, 2026 · 3:00 PM PDT",
   streamUrl:
     "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
   // ── Status is derived from startAt vs local time; override below to force a state
@@ -34,9 +36,6 @@ const DEMO_GAME = {
   // ── Toggle to simulate paywall: "free" | "ppv" | "subscriber"
   access: "free" as "free" | "ppv" | "subscriber",
   priceUSD: null as number | null,
-  league: "Football",
-  title: "Varsity Sports Show Live Stream",
-  score: { home: 14, away: 7 }, // shown only when status === "live"
 };
 
 type LivePageProps = {
@@ -94,7 +93,6 @@ function MatchHeader({ game }: { game: typeof DEMO_GAME }) {
           <p className="text-base sm:text-lg font-bold leading-tight">{game.home.name}</p>
         </div>
 
-        {/* Center: live score or VS */}
         <div className="text-3xl font-semibold text-white/20 tracking-widest">
           VS
         </div>

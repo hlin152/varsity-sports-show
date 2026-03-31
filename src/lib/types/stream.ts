@@ -2,14 +2,22 @@
 export type AccessType = "free" | "ppv" | "subscriber";
 export type StreamStatus = "live" | "upcoming" | "past";
 
+export interface StreamTeam {
+  name: string;
+  shortName: string;
+  logo?: string | null;
+}
+
 export interface Stream {
   id: string;
   slug: string;
 
   title: string;
   league: string;
-  schoolA: string;
-  schoolB: string;
+  home: StreamTeam;
+  away: StreamTeam;
+
+  location?: string | null;  // Venue / city
 
   startAt: string;          // ISO time
   status: StreamStatus;

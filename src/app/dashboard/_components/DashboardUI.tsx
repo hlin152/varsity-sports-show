@@ -17,6 +17,7 @@ import {
   Calendar as CalendarIcon
 } from "lucide-react"; // Custom SVG icons
 import { UserButton, useUser } from "@clerk/nextjs";
+import type { Stream, StreamStatus } from "@/lib/types/stream";
 import { RoleInitializer } from "./RoleInitializer"; // Set sign up user with role = viewer
 import { format } from "date-fns";
 import { DayPicker } from "react-day-picker";
@@ -276,21 +277,6 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   );
 }
 
-// --- Types ---
-export type StreamStatus = "live" | "upcoming" | "past";
-export type Stream = {
-  id: string;
-  title: string;
-  league: string; // e.g., HS Football
-  schoolA: string;
-  schoolB: string;
-  startAt: string; // ISO
-  priceUSD?: number; // undefined means free
-  status: StreamStatus;
-  thumbnail: string; // url or placeholder
-  slug: string; // /live/[slug]
-  sourceUrl: string; 
-};
 
 // --- Derive stream status from startAt relative to local time ---
 function computeStatus(startAt: string): StreamStatus {
@@ -300,78 +286,27 @@ function computeStatus(startAt: string): StreamStatus {
   return "live";
 }
 
-// --- Fixed Data ---
+// --- Mock Data (combined fixed + test entries) — replace with [] at official launch ---
 const MOCK_STREAMS_test: Stream[] = [
-{
+  {
     id: "0",
+    slug: "nsu-vs-gcu-2026",
     title: "Varsity Sports Show Live Stream",
     league: "Football",
-    schoolA: "NSU",
-    schoolB: "GCU",
+    home: { name: "Nevada State University (NSU) Scorpions", shortName: "NSU", logo: null },
+    away: { name: "Grand Canyon University (GCU) 'Lopes", shortName: "GCU", logo: null },
+    location: "Henderson, Nevada",
     startAt: "2026-04-04T22:00:00.000Z", // Saturday, Apr 4, 2026 · 3:00 PM PDT (UTC-7)
-    priceUSD: 0,
     status: computeStatus("2026-04-04T22:00:00.000Z"),
-    thumbnail: "https://cdn.forumcomm.com/dims4/default/6df5ee2/2147483647/strip/true/crop/4000x2667+0+1/resize/840x560!/format/webp/quality/90/?url=https%3A%2F%2Fforum-communications-production-web.s3.us-west-2.amazonaws.com%2Fbrightspot%2Fc8%2Fa7%2F7aed3ece422ca6707ceb7d646ab0%2F111425-hsfb-howard-wall-class9a-12.jpg",
-    slug: "wolves-vs-tigers-2025w10",
-    sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
+    access: "free",
+    priceUSD: null,
+    thumbnailUrl: "https://cdn.forumcomm.com/dims4/default/6df5ee2/2147483647/strip/true/crop/4000x2667+0+1/resize/840x560!/format/webp/quality/90/?url=https%3A%2F%2Fforum-communications-production-web.s3.us-west-2.amazonaws.com%2Fbrightspot%2Fc8%2Fa7%2F7aed3ece422ca6707ceb7d646ab0%2F111425-hsfb-howard-wall-class9a-12.jpg",
+    dacastIframeSrc: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
-// --- Mock Data remove or add for testing ---
-const MOCK_STREAMS: Stream[] = [
-{
-    id: "1",
-    title: "Friday Night Lights: Wolves vs. Tigers",
-    league: "HS Football",
-    schoolA: "Desert Ridge",
-    schoolB: "Mesa East",
-    startAt: new Date(Date.now() + 1000 * 60 * 20).toISOString(),
-    priceUSD: 6.99,
-    status: "live",
-    thumbnail: "https://images.unsplash.com/photo-1546527868-ccb7ee7dfa6a?w=1200&q=80&auto=format&fit=crop",
-    slug: "wolves-vs-tigers-2025w10",
-    sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
-  },
-  {
-    id: "2",
-    title: "Varsity Basketball: Hawks @ Cougars",
-    league: "HS Basketball",
-    schoolA: "Tempe Hawks",
-    schoolB: "Saguaro Cougars",
-    startAt: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-    priceUSD: 4.99,
-    status: "upcoming",
-    thumbnail: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1200&q=80&auto=format&fit=crop",
-    slug: "hawks-at-cougars-2025w10",
-    sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
-  },
-  {
-    id: "3",
-    title: "Girls Volleyball Finals: Suns vs. Bears",
-    league: "HS Volleyball",
-    schoolA: "Arcadia Suns",
-    schoolB: "Gilbert Bears",
-    startAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
-    priceUSD: undefined,
-    status: "past",
-    thumbnail: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1200&q=80&auto=format&fit=crop",
-    slug: "suns-vs-bears-2025-finals",
-    sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
-  },
-  {
-    id: "4",
-    title: "Baseball Semifinal: Knights vs. Mustangs",
-    league: "HS Baseball",
-    schoolA: "North Knights",
-    schoolB: "West Mustangs",
-    startAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-    priceUSD: 7.99,
-    status: "upcoming",
-    thumbnail: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&q=80&auto=format&fit=crop",
-    slug: "knights-vs-mustangs-2025-semi",
-    sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
-  },
-];
 
 // --- Stream card Info with Livestream Data Structure ---
 function StreamCard({
@@ -402,7 +337,7 @@ function StreamCard({
       <div className={layout === "list" ? "w-48 shrink-0" : "aspect-video w-full"}>
         <div className="relative h-full w-full bg-neutral-200">
           {/* Thumbnail */}
-          <img src={stream.thumbnail} alt={stream.title} className="h-full w-full object-cover" />
+          <img src={stream.thumbnailUrl ?? ""} alt={stream.title} className="h-full w-full object-cover" />
           {/* Status badge */}
           <div className="absolute left-2 top-2 flex items-center gap-2">
             <Badge className={statusStyles[stream.status] + " backdrop-blur"}>
@@ -414,8 +349,8 @@ function StreamCard({
                 <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> Past</span> // Past Badge
               )}
             </Badge>
-            {typeof stream.priceUSD === "number" ? (
-              <Badge className="bg-amber-50 text-amber-700 ring-1 ring-amber-200"><Ticket className="h-3 w-3 mr-1" />${stream.priceUSD.toFixed(2)}</Badge> // Single Ticket Badge 
+            {stream.access !== "free" ? (
+              <Badge className="bg-amber-50 text-amber-700 ring-1 ring-amber-200"><Ticket className="h-3 w-3 mr-1" />${stream.priceUSD?.toFixed(2) ?? "–"}</Badge> // Single Ticket Badge
             ) : (
               <Badge className="bg-sky-50 text-sky-700 ring-1 ring-sky-200"><Ticket className="h-3 w-3 mr-1" />Free</Badge> // Free Ticket Badge
             )}
@@ -429,16 +364,15 @@ function StreamCard({
             {/* Livestream Title */}
             <h3 className="text-base font-semibold leading-tight line-clamp-2">{stream.title}</h3>
             <p className="mt-1 text-sm text-neutral-600">
-              {/* schoolA vs schoolB and League Info */}
-              <span className="font-medium">{stream.schoolA}</span> vs <span className="font-medium">{stream.schoolB}</span>
+              {/* home vs away and League Info */}
+              <span className="font-medium">{stream.home.shortName}</span> vs <span className="font-medium">{stream.away.shortName}</span>
               <span className="mx-2">·</span>
               <span className="text-neutral-500">{stream.league}</span>
             </p>
           </div>
-          {/* Open Button check if Live, open external link to /live/[slug] */}
-          {/* href={`/live/${stream.slug}`}  */}
+          {/* Open Button → /live/[slug] */}
           <a
-            href={`/live_test`} 
+            href={`/live/${stream.slug}`}
             className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1.5 text-sm hover:bg-neutral-50"
             title="Open stream"
           >
@@ -504,16 +438,16 @@ export default function DashboardUI() {
   const [tab, setTab] = useState<StreamStatus | "all">("all");
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [viewMode, setViewMode] = useState<"viewer" | "admin">("viewer");
-  const [streams, setStreams] = useState<Stream[]>(MOCK_STREAMS_test); // TODO: Delete MOCK_STREAMS and replace with [] when official launch
+  const [streams, setStreams] = useState<Stream[]>(MOCK_STREAMS_test); // TODO: replace with [] when official launch
 
   const filtered = useMemo(() => {
     return streams.filter((s) => (tab === "all" ? true : s.status === tab)).filter((s) => {
       const q = query.trim().toLowerCase();
       if (!q) return true;
-      const hay = `${s.title} ${s.schoolA} ${s.schoolB} ${s.league}`.toLowerCase();
+      const hay = `${s.title} ${s.home.shortName} ${s.home.name} ${s.away.shortName} ${s.away.name} ${s.league}`.toLowerCase();
       return hay.includes(q);
     });
-  }, [query, tab]);
+  }, [streams, query, tab]);
 
   const live = filtered.filter((s) => s.status === "live");
   const upcoming = filtered.filter((s) => s.status === "upcoming");
@@ -753,12 +687,12 @@ function AdminPanel({ onCreated }: { onCreated: (s: Stream) => void }) {
   const [price, setPrice] = useState("");
   const [thumbnail, setThumbnail] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
-  type AccessType = "" | "free" | "ppv" | "subscriber";
-  const [access, setAccess] = useState<AccessType>("");
+  type FormAccessType = "" | "free" | "ppv" | "subscriber";
+  const [access, setAccess] = useState<FormAccessType>("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleAccessChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  const value = e.target.value as AccessType | "blank";
+  const value = e.target.value as FormAccessType | "blank";
 
   if (value === "blank") {
     setAccess("");
@@ -800,20 +734,19 @@ function AdminPanel({ onCreated }: { onCreated: (s: Stream) => void }) {
 
       const created: Stream = {
         id: Date.now().toString(),
+        slug: toSlug(`${schoolA}-${schoolB}-${title}`),
         title,
         league,
-        schoolA,
-        schoolB,
+        home: { name: schoolA, shortName: schoolA.slice(0, 3).toUpperCase(), logo: null },
+        away: { name: schoolB, shortName: schoolB.slice(0, 3).toUpperCase(), logo: null },
         startAt: new Date(startAt).toISOString(),
-        priceUSD: access === "free" ? undefined : Number(price),
-        status:
-          new Date(startAt).getTime() <= Date.now()
-            ? "live"
-            : "upcoming",
-        thumbnail:
-          thumbnail,
-        slug: toSlug(`${schoolA}-${schoolB}-${title}`),
-        sourceUrl,
+        status: new Date(startAt).getTime() <= Date.now() ? "live" : "upcoming",
+        access: access as "free" | "ppv" | "subscriber",
+        priceUSD: access === "ppv" ? Number(price) : null,
+        thumbnailUrl: thumbnail,
+        dacastIframeSrc: sourceUrl,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       onCreated(created);
