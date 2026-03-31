@@ -279,18 +279,23 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 
 // --- Derive stream status from startAt relative to local time ---
+// A game is "past" if it started more than 4 hours ago, "live" if started within the last 4 hours, "upcoming" if in the future.
 function computeStatus(startAt: string): StreamStatus {
   const now = new Date();
   const start = new Date(startAt);
   if (now < start) return "upcoming";
+  if (now.getTime() - start.getTime() > 4 * 60 * 60 * 1000) return "past";
   return "live";
 }
 
 // --- Mock Data (combined fixed + test entries) — replace with [] at official launch ---
-const MOCK_STREAMS_test: Stream[] = [
+// Returns a fresh array on each call so computeStatus always runs with the current time.
+// TODO: remove mock data once ready
+function getMockStreams(): Stream[] {
+  return [
   {
     id: "0",
-    slug: "nsu-vs-gcu-2026",
+    slug: "nsu-vs-gcu-2026-04-04",
     title: "Varsity Sports Show Live Stream",
     league: "Football",
     home: { name: "Nevada State University (NSU) Scorpions", shortName: "NSU", logo: null },
@@ -305,8 +310,8 @@ const MOCK_STREAMS_test: Stream[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
-];
-
+  ];
+}
 
 // --- Stream card Info with Livestream Data Structure ---
 function StreamCard({
@@ -438,16 +443,29 @@ export default function DashboardUI() {
   const [tab, setTab] = useState<StreamStatus | "all">("all");
   const [layout, setLayout] = useState<"grid" | "list">("grid");
   const [viewMode, setViewMode] = useState<"viewer" | "admin">("viewer");
-  const [streams, setStreams] = useState<Stream[]>(MOCK_STREAMS_test); // TODO: replace with [] when official launch
+  const [streams, setStreams] = useState<Stream[]>(getMockStreams); // TODO: replace with [] when official launch
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterLeague, setFilterLeague] = useState<string>("all");
+  const [filterAccess, setFilterAccess] = useState<"all" | "free" | "ppv" | "subscriber">("all");
+
+  const allLeagues = useMemo(
+    () => Array.from(new Set(streams.map((s) => s.league).filter(Boolean))).sort(),
+    [streams]
+  );
 
   const filtered = useMemo(() => {
-    return streams.filter((s) => (tab === "all" ? true : s.status === tab)).filter((s) => {
-      const q = query.trim().toLowerCase();
-      if (!q) return true;
-      const hay = `${s.title} ${s.home.shortName} ${s.home.name} ${s.away.shortName} ${s.away.name} ${s.league}`.toLowerCase();
-      return hay.includes(q);
-    });
-  }, [streams, query, tab]);
+    return streams
+      .map((s) => ({ ...s, status: computeStatus(s.startAt) })) // recompute status from startAt on every render
+      .filter((s) => (tab === "all" ? true : s.status === tab))
+      .filter((s) => (filterLeague === "all" ? true : s.league === filterLeague))
+      .filter((s) => (filterAccess === "all" ? true : s.access === filterAccess))
+      .filter((s) => {
+        const q = query.trim().toLowerCase();
+        if (!q) return true;
+        const hay = `${s.title} ${s.home.shortName} ${s.home.name} ${s.away.shortName} ${s.away.name} ${s.league}`.toLowerCase();
+        return hay.includes(q);
+      });
+  }, [streams, query, tab, filterLeague, filterAccess]);
 
   const live = filtered.filter((s) => s.status === "live");
   const upcoming = filtered.filter((s) => s.status === "upcoming");
@@ -575,7 +593,7 @@ export default function DashboardUI() {
                 {/* Section grid / View all Button*/}
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Live now</h2>
-                  <a href="/live" className="text-sm text-neutral-700 hover:underline">View all</a>
+                  <button onClick={() => setTab("live")} className="text-sm text-neutral-700 hover:underline">View all</button>
                 </div>
 
                 {live.length === 0 ? (
@@ -601,9 +619,70 @@ export default function DashboardUI() {
               <section className="mb-8">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Upcoming</h2>
-                  <button className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50">
-                    <FilterIcon className="h-4 w-4" /> Filters
-                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowFilters((v) => !v)}
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition ${
+                        showFilters || filterLeague !== "all" || filterAccess !== "all"
+                          ? "border-black bg-black text-white"
+                          : "border-neutral-200 bg-white hover:bg-neutral-50"
+                      }`}
+                    >
+                      <FilterIcon className="h-4 w-4" /> Filters
+                      {(filterLeague !== "all" || filterAccess !== "all") && (
+                        <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black">
+                          {(filterLeague !== "all" ? 1 : 0) + (filterAccess !== "all" ? 1 : 0)}
+                        </span>
+                      )}
+                    </button>
+
+                    {showFilters && (
+                      <div className="absolute right-0 top-full z-30 mt-2 w-60 rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl">
+                        {/* League filter */}
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">League</p>
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {["all", ...allLeagues].map((l) => (
+                            <button
+                              key={l}
+                              onClick={() => setFilterLeague(l)}
+                              className={`rounded-full border px-2.5 py-1 text-xs font-medium transition ${
+                                filterLeague === l
+                                  ? "border-black bg-black text-white"
+                                  : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
+                              }`}
+                            >
+                              {l === "all" ? "All" : l}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Access filter */}
+                        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">Access</p>
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {(["all", "free", "ppv", "subscriber"] as const).map((a) => (
+                            <button
+                              key={a}
+                              onClick={() => setFilterAccess(a)}
+                              className={`rounded-full border px-2.5 py-1 text-xs font-medium transition capitalize ${
+                                filterAccess === a
+                                  ? "border-black bg-black text-white"
+                                  : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
+                              }`}
+                            >
+                              {a === "all" ? "All" : a === "ppv" ? "PPV" : a.charAt(0).toUpperCase() + a.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          onClick={() => { setFilterLeague("all"); setFilterAccess("all"); }}
+                          className="w-full rounded-full border border-neutral-200 py-1.5 text-xs text-neutral-500 hover:bg-neutral-50"
+                        >
+                          Clear filters
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {upcoming.length === 0 ? (
@@ -629,7 +708,7 @@ export default function DashboardUI() {
               <section className="mb-8">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">Past Games</h2>
-                  <a href="/replays" className="text-sm text-neutral-700 hover:underline">Browse replays</a>
+                  <button onClick={() => setTab("past")} className="text-sm text-neutral-700 hover:underline">Browse replays</button>
                 </div>
 
                 {past.length === 0 ? (

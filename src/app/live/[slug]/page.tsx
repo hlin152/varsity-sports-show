@@ -8,61 +8,10 @@ import type { Stream } from "@/lib/types/stream";
 async function getStreamBySlug(slug: string): Promise<Stream | null> {
   // const { data } = await supabase
   const mockDB: Record<string, Stream> = {
-    "test-game": {
-      id: "test-game",
-      slug: "test-game",
-      title: "Test Game",
-      league: "Football",
-      home: { name: "Desert Ridge", shortName: "DR", logo: null },
-      away: { name: "Mesa East", shortName: "ME", logo: null },
-      location: "Mesa, Arizona",
-      startAt: new Date().toISOString(),
-      status: "live",
-      access: "free",
-      priceUSD: null,
-      dacastIframeSrc: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-
-    "ppv-game": {
-      id: "ppv-game",
-      slug: "ppv-game",
-      title: "PPV Game",
-      league: "Basketball",
-      home: { name: "Team A", shortName: "TMA", logo: null },
-      away: { name: "Team B", shortName: "TMB", logo: null },
-      location: "Phoenix, Arizona",
-      startAt: new Date().toISOString(),
-      status: "live",
-      access: "ppv",
-      priceUSD: 4.99,
-      dacastIframeSrc: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-
-    "upcoming-game": {
-      id: "upcoming-game",
-      slug: "upcoming-game",
-      title: "Upcoming Game",
-      league: "Football",
-      home: { name: "Soon Team", shortName: "STM", logo: null },
-      away: { name: "Later Team", shortName: "LTM", logo: null },
-      location: "Scottsdale, Arizona",
-      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-      status: "upcoming",
-      access: "free",
-      priceUSD: null,
-      dacastIframeSrc: null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-
     // ── Dashboard mock streams ────────────────────────────────────────────────
-    "nsu-vs-gcu-2026": {
+    "nsu-vs-gcu-2026-04-04": {
       id: "nsu-vs-gcu-2026",
-      slug: "nsu-vs-gcu-2026",
+      slug: "nsu-vs-gcu-2026-04-04",
       title: "Varsity Sports Show Live Stream",
       league: "Football",
       home: { name: "Nevada State University (NSU) Scorpions", shortName: "NSU", logo: null },
