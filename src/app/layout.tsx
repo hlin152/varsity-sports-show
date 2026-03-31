@@ -12,7 +12,11 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider appearance={{ theme: shadesOfPurple }} afterSignOutUrl="https://varsitysportsshow.com/">
+    <ClerkProvider
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      appearance={{ theme: shadesOfPurple }}
+      afterSignOutUrl="https://varsitysportsshow.com/"
+    >
       <html lang="en">
         <body className="bg-white text-slate-900 antialiased">
           {children}
