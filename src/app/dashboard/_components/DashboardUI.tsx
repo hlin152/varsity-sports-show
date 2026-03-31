@@ -292,17 +292,25 @@ export type Stream = {
   sourceUrl: string; 
 };
 
+// --- Derive stream status from startAt relative to local time ---
+function computeStatus(startAt: string): StreamStatus {
+  const now = new Date();
+  const start = new Date(startAt);
+  if (now < start) return "upcoming";
+  return "live";
+}
+
 // --- Fixed Data ---
 const MOCK_STREAMS_test: Stream[] = [
 {
     id: "0",
     title: "Varsity Sports Show Live Stream",
-    league: "Sports",
-    schoolA: "Test01",
-    schoolB: "Test02",
-    startAt: new Date().toISOString(),
+    league: "Football",
+    schoolA: "NSU",
+    schoolB: "GCU",
+    startAt: "2026-04-04T22:00:00.000Z", // Saturday, Apr 4, 2026 · 3:00 PM PDT (UTC-7)
     priceUSD: 0,
-    status: "live",
+    status: computeStatus("2026-04-04T22:00:00.000Z"),
     thumbnail: "https://cdn.forumcomm.com/dims4/default/6df5ee2/2147483647/strip/true/crop/4000x2667+0+1/resize/840x560!/format/webp/quality/90/?url=https%3A%2F%2Fforum-communications-production-web.s3.us-west-2.amazonaws.com%2Fbrightspot%2Fc8%2Fa7%2F7aed3ece422ca6707ceb7d646ab0%2F111425-hsfb-howard-wall-class9a-12.jpg",
     slug: "wolves-vs-tigers-2025w10",
     sourceUrl: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
