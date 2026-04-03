@@ -2,6 +2,15 @@
 import { notFound } from "next/navigation";
 import type { Stream } from "@/lib/types/stream";
 
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function computeStatus(startAt: string): Stream["status"] {
+  const now = new Date();
+  const start = new Date(startAt);
+  if (now < start) return "upcoming";
+  if (now.getTime() - start.getTime() > 4 * 60 * 60 * 1000) return "past";
+  return "live";
+}
+
 // ─── DATA FETCHING ────────────────────────────────────────────────────────────
 // TODO: replace with a real DB / API call once the backend is ready.
 // The function should return `null` when no stream matches the slug.
@@ -9,16 +18,16 @@ async function getStreamBySlug(slug: string): Promise<Stream | null> {
   // const { data } = await supabase
   const mockDB: Record<string, Stream> = {
     // ── Dashboard mock streams ────────────────────────────────────────────────
-    "nsu-vs-gcu-2026-04-04": {
-      id: "nsu-vs-gcu-2026",
-      slug: "nsu-vs-gcu-2026-04-04",
+    "csn-vs-yavapai-2026-04-04": {
+      id: "csn-vs-yavapai-2026",
+      slug: "csn-vs-yavapai-2026-04-04",
       title: "Varsity Sports Show Live Stream",
-      league: "Football",
-      home: { name: "Nevada State University (NSU) Scorpions", shortName: "NSU", logo: null },
-      away: { name: "Grand Canyon University (GCU) 'Lopes", shortName: "GCU", logo: null },
-      location: "Henderson, Nevada",
-      startAt: "2026-04-04T22:00:00.000Z",
-      status: "upcoming",
+      league: "Baseball",
+      home: { name: "College of Southern Nevada", shortName: "CSN", logo: null },
+      away: { name: "Yavapai College", shortName: "YC", logo: null },
+      location: "Las Vegas, Nevada",
+      startAt: "2026-04-04T18:45:00.000Z",
+      status: computeStatus("2026-04-04T18:45:00.000Z"),
       access: "free",
       priceUSD: null,
       dacastIframeSrc: "https://iframe.dacast.com/live/80cea297-81e0-24ec-924b-772c26b87f56/a2edb7a8-c226-4478-861f-539a00109990",
@@ -39,6 +48,7 @@ function formatGameTime(startAt: string): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "America/Los_Angeles",
     timeZoneName: "short",
   });
 }

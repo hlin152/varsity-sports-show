@@ -295,14 +295,14 @@ function getMockStreams(): Stream[] {
   return [
   {
     id: "0",
-    slug: "nsu-vs-gcu-2026-04-04",
+    slug: "csn-vs-yavapai-2026-04-04",
     title: "Varsity Sports Show Live Stream",
-    league: "Football",
-    home: { name: "Nevada State University (NSU) Scorpions", shortName: "NSU", logo: null },
-    away: { name: "Grand Canyon University (GCU) 'Lopes", shortName: "GCU", logo: null },
-    location: "Henderson, Nevada",
-    startAt: "2026-04-04T22:00:00.000Z", // Saturday, Apr 4, 2026 · 3:00 PM PDT (UTC-7)
-    status: computeStatus("2026-04-04T22:00:00.000Z"),
+    league: "Baseball",
+    home: { name: "College of Southern Nevada", shortName: "CSN", logo: null },
+    away: { name: "Yavapai College", shortName: "YC", logo: null },
+    location: "Las Vegas, Nevada",
+    startAt: "2026-04-04T18:45:00.000Z", // Saturday, Apr 4, 2026 · 11:45 AM PDT (UTC-7, Las Vegas)
+    status: computeStatus("2026-04-04T18:45:00.000Z"),
     access: "free",
     priceUSD: null,
     thumbnailUrl: "https://cdn.forumcomm.com/dims4/default/6df5ee2/2147483647/strip/true/crop/4000x2667+0+1/resize/840x560!/format/webp/quality/90/?url=https%3A%2F%2Fforum-communications-production-web.s3.us-west-2.amazonaws.com%2Fbrightspot%2Fc8%2Fa7%2F7aed3ece422ca6707ceb7d646ab0%2F111425-hsfb-howard-wall-class9a-12.jpg",
@@ -322,12 +322,13 @@ function StreamCard({
   layout?: "grid" | "list";
 }) {
   const date = new Date(stream.startAt);
-  const timeText = date.toLocaleString(undefined, {
+  const timeText = date.toLocaleString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: "America/Los_Angeles",
   });
 
   // LIVE | Upcoming | Past
@@ -342,7 +343,9 @@ function StreamCard({
       <div className={layout === "list" ? "w-48 shrink-0" : "aspect-video w-full"}>
         <div className="relative h-full w-full bg-neutral-200">
           {/* Thumbnail */}
-          <img src={stream.thumbnailUrl ?? ""} alt={stream.title} className="h-full w-full object-cover" />
+          {stream.thumbnailUrl && (
+            <img src={stream.thumbnailUrl} alt={stream.title} className="h-full w-full object-cover" />
+          )}
           {/* Status badge */}
           <div className="absolute left-2 top-2 flex items-center gap-2">
             <Badge className={statusStyles[stream.status] + " backdrop-blur"}>
